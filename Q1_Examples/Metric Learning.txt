@@ -1,0 +1,76 @@
+Week 8 - Review
+Summary 
+• A common application of machine learning is retrieval, i.e., given some piece of data, find similar pieces of data. We can use PCA and LDA (and
+many other methods) as non-deep learning methods to help with this by learning a low-dimensional subspace where related items are close
+together and different items are a long way apart, but our existing deep learning approaches, which are trained to classify or regress things,
+don’t work so well here. While classification will get us something in the ballpark, it will only allow us to tell if two items are the same type of
+“thing” (i.e., if they’re the same class), it will provide no sense or how similar things are. 
+• What we desire is a network that will map from our input to some low dimensional embedding. Similar inputs will result in similar
+embeddings, and the more similar a pair of inputs are, the more similar two embeddings should be. To do this we need to train the model
+based on this criterion, i.e., similar items have similar embeddings, different items have different embeddings. In our examples, this means
+that we have had two or three instances of the same network (same layers, same weights, same everything – they are identical); we’ll refer to
+these as the branches of our Siamese network. We’ll then take the output of each of these branches, which will simply be an embedding, and
+compute the loss based on this. 
+• The simplest way to do this is to use contrastive loss. This will take a pair of images, and the pair can either be of the same class (i.e. similar),
+or of different classes. Contrastive loss has the form LC=1N∑Ni=1yidi+(1−yi)max(margin−di,0)LC=1N∑i=1Nyidi+(1−yi)max(margin−di,0), where
+di=||x¯1−x¯2||2di=||x¯1−x¯2||2 is the distance between our two features, x¯1x¯1 and x¯2x¯2; and yiyi is an indicator variable that is 1 when
+we have a matching pair, and 0 when we have a mismatched (i.e. different pair). Here, in our distance function we’ve computed an L2
+distance, but we could use an L1 or a cosine distance too. To understand this better, let’s break it down: 
+•
+• yidiyidi will be non-zero when the pair is the same. So, for similar pairs, our loss is simply didi. Remember that our network wants to
+minimise the loss, so this will mean that we have the same thing in a pair, we will try to make the distance small. 
+• (1−yi)max(margin−di,0)(1−yi)max(margin−di,0) will be non-zero when the pair is different (i.e., when yi=0yi=0). Then, our loss becomes
+max(margin−di,0)max(margin−di,0). If didi is small (i.e., the images are close together), then the loss will be large as margin–
+dimargin–di will still be large. Once didi is bigger than marginmargin, our loss goes to 0. This term will try to push samples from
+different classes a distance of marginmargin apart. 
+• The rest of the function is just computing an average over the batch. 
+• One problem with the above is how to set marginmargin. We can avoid this problem by normalising our embeddings (i.e., x¯1x¯1 and x¯2x¯2)
+and setting margin to 1. 
+• Another problem with the contrastive loss is that we only consider a positive pair, or a negative pair, but not both. Given that we’re looking to
+use this network to help rank things, wouldn’t it be nice to train it to rank things? Enter the triplet loss. With the triplet loss we take three
+samples, an anchor, a positive sample which is the same class as the anchor, and a negative sample which is a different class to the anchor.
+From this we form two pairs, a positive pair (anchor and positive) and a negative pair (anchor and negative). We get embeddings for the three
+samples, and then compute the triplet loss using Ltriplet=max(d(a¯,p¯)−d(a¯,n¯)+margin,0)Ltriplet=max(d(a¯,p¯)−d(a¯,n¯)+margin,0), where a¯
+a¯, p¯p¯ and n¯n¯ are the embeddings for our anchor, positive and negative samples, and dd is some distance function. Again, breaking this
+down: 
+•
+• We get the distance between the anchor and the positive samples, d(a¯,p¯)d(a¯,p¯), and the distance between the anchor and the
+negative samples, d(a¯,n¯)d(a¯,n¯). 
+• We subtract d(a¯,n¯)d(a¯,n¯) from d(a¯,p¯)d(a¯,p¯). We want the positive pair to be closer together than the negative pair, so ideally
+the result of this subtraction should be negative.  
+• To help get good separation between positive and negative pairs, we add marginmargin to the result of the subtraction. Now for the
+loss to be negative, we need the positive pair to be marginmargin closer together than the negative pair. 
+• Because we want our loss function to be greater than or equal to 0, we then use a maxmax operation to avoid negative losses. 
+• The triplet loss will, within one sample, try to push a positive pair closer together, and pull a negative pair further apart. This will generally
+lead to better learning than the contrastive loss. 
+• Some of you may have got to this point and be wondering, “What about binary cross entropy? That was in an example, wasn’t it?”. Yes, it was
+in an example, but it’s not particularly good. It simply learnt to compare things pairwise and tell us if they are the same or different. It is
+conceptually the simplest, but also the most limiting as it does not operate on the embedding space. Hence, I am not really focussing on it
+here. 
+• For both triplet and contrastive loss, the embedding size is important. Bigger embeddings will allow for better separation of classes (up to
+some point, the size of the base network also plays a role here). Generally, with more classes, and/or more variation in the classes bigger
+embeddings sizes will help. 
+• You can use a pre-trained backbone as your Siamese branch. There is no need to learn this from scratch if you don’t want to. Using a pre-
+trained model in these sorts of problems is quite common. 
+• Our method of learning with the contrastive or triplet loss is inefficient. We can actually do a lot better. If we take some batch of data, let’s
+say with 128 samples, there are potentially 1000’s of valid triplets in that batch. A better way is to pass the entire batch of samples through
+the network, and then within the loss function build the triplets (or pairs). This allows you to reuse the one embedding in multiple pairs/
+triplets and means each batch results in heap more pairs/triplets. If this sounds interesting, check out the relevant bonus example. 
+By now you will have 
+• Trained Siamese networks using binary cross entropy (BCE), contrastive and triplet losses, and seen the improvement in performance that
+occurs as you go from BCE, to contrastive, to the triplet loss. 
+• Explored how the size of the embedding impacts the quality of the learned representation. 
+• Seen how generators are used to create almost infinite pairs (or triplets) of data to feed into a deep neural network during training. 
+• Become familiar with using t-SNE to visualise deep learning embeddings. 
+Glossary 
+Terms you should be familiar with after this week: 
+• Backbone Network: A “feature extractor” network, which is used to process input data into a (typically) more compact representation. The
+resultant representation may be fed to other sub-networks, or may be directly used to compute the loss, depending on the task at hand. 
+• Embedding: A (somewhat) low dimensional space, which you can map into from a high dimensional space such as the input to a network. 
+• Siamese Network: A network with two (or more) branches with identical weights, such that if the same sample were passed to each branch the
+same embedding would be produced. 
+• Contrastive Loss: A loss function that operates of pairs of inputs and seeks to bring pairs of the same class close together, while pushing pairs
+of different classes apart. 
+• Triplet Loss: A loss function that operates of a set of three inputs. The three inputs are broken into two pairs (a positive pair of the same
+class, and a negative pair of different classes) and is formulated to bring the positive pair some distance marginmargin closer together than
+the negative pair. 

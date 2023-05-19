@@ -1,0 +1,46 @@
+Practical 6
+Dr Simon Denman
+CAB420: Machine Learning
+This weeks practical will focus on Principal Component Analysis and Linear Discriminate
+Analysis.
+Problem 1. EigenFaces. Consider the EigenFaces lecture example
+(CAB420 Dimension Reduction Example 5 Eigenfaces.ipynb). Using this example, and the
+PCA space that is learned on the YaleB Face Dataset, investigate the face recognition per-
+formance of two additional datasets: Yale 32x32.mat and ORL 32x32.mat. For each of these
+you should:
+1. Use the PCA space learned on the YaleB data (i.e. don’t learn a different PCA space
+on the new data);
+2. Ensure that the new data is resized to the same size as the YaleB data prior to use;
+3. Train a simple KNN classifier (or another classifier of your choosing), using roughly
+66% of the data as training, and the rest as testing;
+4. Evaluate the accuracy of the predictions with different numbers of components re-
+tained;
+5. Visually inspect reconstructions with different numbers of components retained, and
+comment on the quality of the reconstructions for the two databases.
+Problem 2. FisherFaces. Linear Discriminant Analysis is designed to find a re-projection
+of the data such that it maximises the distance between the classes, while ensuring that
+samples of the same class are tightly grouped. As such, it has been widely applied to
+biometrics. One such method is FisherFaces, which applies PCA and then LDA to help
+group faces of the same subject. In brief, FisherFaces operates as follows:
+1. Construct an image matrix, where each row is a vectorised version of an image (i.e. as
+was done for EigenFaces)
+2. Project this matrix into an N − C (N is the number of samples, C is the number of
+unique classes) using PCA.
+3. Apply LDA to the subspace that results from the PCA transform, i.e.:
+(a) Compute the between class scatter matrix in the projected space;
+(b) Compute the within class scatter matrix in the project space;
+(c) Compute the eigenvalues and eigenvectors of the ratio of the scatter matrices.
+4. Learn a classifier (i.e. k-nearest neighbours) in the final LDA space.
+New samples can now be mapped to the FisherFace space by applying the PDA projection
+followed by the LDA projection.
+Using this classifier:
+1. Compare the performance of LDA and PCA using the test set of the YaleB dataset.
+2. Compare the performance of LDA and PCA using the two additional datasets the:
+Yale 32x32.mat and ORL 32x32.mat. As per Question 1, do not re-train the PCA or
+LDA subspace using this data.
+3. Compare the performance of EigenFaces as the number of retained PCA components
+changes, to FisherFaces when equivalent changes are made to the number of retained
+components in the LDA space (note, do not reduce the number of components in the
+initial PCA projection for FisherFaces).
+More information on FisherFaces can be found in the original paper [?], or online in posts
+such as this one: https://www.bytefish.de/blog/fisherfaces/

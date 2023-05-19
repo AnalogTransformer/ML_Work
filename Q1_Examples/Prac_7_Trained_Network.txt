@@ -1,0 +1,17 @@
+Practical 7
+Dr Simon Denman
+CAB420: Machine Learning
+This weeks practical will focus on Siamese networks and how these can be used to compare
+things.
+Problem 1. Deep Face Recognition. Using the YaleB 32x32.mat data, train a Siamese
+network to match faces of the same subject. In doing this you should:
+1. Determine your network architecture, i.e. pairs or triplets, and loss formulation. You
+may also wish to fine tune an existing network.
+2. Implement (or modify) an appropriate method to generate pairs/triplets of images,
+and verify that this is generating pairs/triplets as expected.
+Using your trained network, evaluate it and compare the performance to the PCA and
+LDA approaches from last week. Note that you can train a CKNN classifier to replicate the
+functionality of last week’s approaches by:
+1. Passing each image through the network to generate an embedding;
+2. Applying CKNN to the embeddings.
+As per last week, evaluate the performance on the Yale and ORL datasets.

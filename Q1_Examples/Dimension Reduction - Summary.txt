@@ -1,0 +1,65 @@
+Dimension Reduction - Summary 
+
+    Not all dimensions are equal. As we saw with linear regression, some dimensions carry more information than others, and some may in fact have very little information (or even no information) towards the objective. 
+    We can think of data in terms of the observed dimensionality, and the true dimensionality. If we consider a tabular dataset where we have 10 predictors, at first glance we would say that our data is 10-dimensional. However, if these 10 predictors are not independent, and there is in fact some hidden relationship in the data (maybe the terms are all highly correlated with each other), then our true dimensionality may be much lower. Essentially, we’re saying all the variation in the data can be explained by fewer dimensions, that one or two hidden (or latent) factors account for all the variation in the data. This is perhaps easier to visualise in terms of images. Let’s say we are modelling images of faces, and we are using 32x32x3 images. Within our images we have 3,072 dimensions, each of which can take values in the range [0..255]. There is a truly massive number of possible 32x32x3 images that can exist, but the vast majority of these will not be faces – the true dimensionality of our face dataset is much lower. 
+    This idea of observed vs true dimensionality is a powerful motivator for dimension reduction. The more dimensions we have in our data, the more samples we need to train a good machine learning model. If we can transform our data to a lower dimensional representation without losing important information, this will make subsequent model development easier (and faster) and help us avoid issues like overfitting. 
+    Principal Component Analysis (PCA) is one method we can use to reduce dimensions. PCA computes a transform of the data (we can view this as a rotation), such that the first of the “new” dimensions contains the most variation, the second “new” dimension contains the second most variation, and so on. Each dimension is orthogonal to each other (at right angles), and the returned dimensions are uncorrelated with each other. 
+
+        PCA is unsupervised. It only takes the data as an input and computes the transform from this. 
+
+        The set of dimensions returned by PCA are ordered from most variance to least variance. Each dimension (which is an eigenvector) has an amount of variance (an eigenvalue) associated with it. We can use the ratio of eigenvalues to give us a percentage variance of how much variation is captured by each dimension. 
+        PCA doesn’t do dimension reduction “out of the box”, you need to decide how many dimensions you want to keep. Normally, you will either have pre-determined number in mind (maybe based on memory, storage or computational constraints) or you’ll look at the number of dimensions needed to capture 90%, 95% or 99% (or some other amount) of variance. We can use a cumulative sum plot, looking at the point at which the cumulative sum exceeds some threshold (i.e. 90%) to determine how many dimensions to keep. 
+        Scale is important. PCA is sensitive to changes in the scale of the data. Like regression, SVMs and CKNNs, scale variation across your data will impact the learned transform. If you have high scale variation, standardising your data is often a good option. 
+        With PCA, we can project into the PCA space, and back out again. This means that we start from a high dimensional sample, project this into some low dimensional space with PCA, and then project this back to the original high dimensional space. Note however that some information will be lost in this process via the dimension reduction. 
+        PCA doesn’t move points relative to each other. If, in the original set of axes, two points are let’s say 4 units apart, in the PCA set of axes (assuming you’re using all dimensions) those two points will still be 4 units apart. As you drop dimensions, this distance will change due to the loss of information, but without this the relative position of points does not change (rather the entire data space is rotated). 
+
+        To compute PCA, we need more samples than we have dimensions. If we don’t have this, then we will only be able to compute a transform to as many new dimensions as we have samples. 
+
+    Linear Discriminant Analysis (LDA) is a supervised method for dimension reduction, specifically intended for classification tasks. LDA will learn a projection that will attempt to bring points of the same class closer together, while pushing points of different classes further apart. Thinking back to Support Vector Machines and the idea of having a margin between classes through which we drive the hyperplane, it’s hopefully clear why this sort of transform is useful for classification. LDA often get’s lumped together with PCA (as it did here), but they have some very different properties. 
+
+        As noted above, LDA is supervised (PCA is not), so we need data and class labels. LDA measures within class scatter (how spread the samples in a given class are), and between class scatter (how spread the classes are) and seeks to minimise the ratio of these; as such, class labels are critical. 
+        LDA will only return C-1 meaningful dimensions, where C is the number of classes in the data. Typically, we’d retain all C-1 new dimensions. 
+        LDA will not allow us to project back out of the new set of dimensions to reconstruct the original samples. Once we’ve projected the data into LDA space, there it shall stay. 
+
+        LDA will move points relative to one another. The aim of LDA is to move points of the same class closer together, and those of different classes further apart, hence the distances between two points will change when LDA is applied. 
+        Ideally, for LDA we’d like to have more samples than dimensions for each class. In practice, we don’t need quite this many samples, but we still need to have enough samples to model the scatter. 
+
+    PCA and LDA can both be considered pre-processing techniques. Typically, we’d apply these prior to learning a classifier (LDA, or maybe PCA), performing regression (PCA), or some other process. 
+    t-Distributed Stochastic Neighbourhood Embeddings (t-SNE) is very different to PCA and LDA and is designed specifically for visualising data. t-SNE learns a model that describes the local data distribution in the original high-dimensional data space, and then tries to replicate this distribution in 2D. It is not a linear transform and using this as pre-processing prior to any other learning process is not recommended.  
+
+        t-SNE is stochastic. This means that it involves some randomness, so if you run t-SNE twice (with different random seeds), you’ll get different results. 
+
+        t-SNE is very widely used for visualising neural network embeddings, and it works very well here. While you can also use PCA to visualise data (i.e. take the top two or three dimensions and do a 2D or 3D scatter plot) generally you will have only a small amount of the variation captured in those top 2 or 3 dimensions. t-SNE will typically give a more insightful visualisation when looking at very high dimensional spaces. 
+
+    Consider the form of both the PCA and LDA transform. We learn some transformation matrix, W
+
+. We use this to transform our input to our output via x^=x×W
+
+    . This is similar to a few other equations we’ve seen, most recently the fully connected layer (i.e. Dense layer) operation in deep learning, though with no bias term. We can think of the fully connected layer as learning a projection, much like we do with PCA and LDA. 
+
+By now you will have 
+
+    Applied PCA and LDA to different datasets and used PCA and LDA to transform data to a more compact representation. 
+    Used data transformed by PCA and/or LDA within another machine learning model. 
+
+    Explored how performance of the machine learning process to which you are passing the transformed data changes, depending on: 
+
+        Whether PCA or LDA is being used. 
+        If PCA is being used, the number principal components retained. 
+
+    Seen how scale variation impacts (or doesn’t impact) PCA and LDA. 
+
+Glossary 
+
+Terms you should be familiar with after this week: 
+
+    Subspace: A vector space contained within another vector space. In machine learning we commonly use the term subspace when referring to some lower dimensional representation of data. 
+    Dimension Reduction: The process of finding, and transforming data to, a subspace with fewer dimensions that the original space. 
+    Projection: The process of changing from one vector space to another. 
+    Inverse Projection: The process of changing back from one vector space to the original space. 
+
+    Principal Component: New variables that are constructed as linear combinations of existing variables. When performing principal component analysis, the principal components are ordered such that the first component contains the most variance, the second component contains the second most, and so on. 
+    Orthogonal: At right angles to. 
+    Reconstruction Error: The error observed between the original data, and data that has been projected into and back out of a subspace. In the context of PCA, we may consider the error between a dimension reduced form of the signal (i.e., projected into the PCA sub-space with fewer dimensions, and then projected back out to the original space) and the original signal. 
+    Within-class scatter (or spread): A measure of the spread of points belonging to the same classes. Ideally, points of the same classes will be close by (very little spread). 
+    Between-class scatter (or spread): A measure of the spread of different classes. Ideally, different classes will be far apart (i.e., widely spread).
